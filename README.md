@@ -26,5 +26,7 @@ Original USGS Python Code: https://gist.github.com/mhearne-usgs/6b040c0b423b7d03
 4. Specify FEEDURL in `usgs_earthquake_event_pinger.py` (Line 308-312). ONLY ONE of the feedurls should be un-commented.
     For more information about FEEDURLs, go here: http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
     
-Contact:
+5. Run `usgs_earthquake_event_pinger.py`  
+
+Contact:  
 madeline.jones@nltgis.com
