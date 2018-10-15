@@ -13,7 +13,7 @@ To modify this boundary filter, edit the script called within_usa.py
 Original USGS Python Code: https://gist.github.com/mhearne-usgs/6b040c0b423b7d03f4b9
 
 **Steps:**
-1. Ensure that all 3 Python scripts exist in the same folder:
+1. Ensure that all 3 Python scripts exist in the same folder:  
     `log_earthquake.py`  
     `usgs_earthquake_event_pinger.py`  
     `within_usa.py`  
