@@ -254,6 +254,8 @@ def download_shakemap_zips(eqIDlist, filepath):
                 print('ShakeMap files extracted for Event ID: {} to folder: {}'.format(eventid, eventdir))
                 EventFilePaths.append(eventdir)
 
+
+
             else:
                 print("No update detected for Event ID: {}".format(eventid))
 
@@ -309,6 +311,6 @@ if __name__ == '__main__':
     #FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson'  # Significant Events - 1 week
     #FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_hour.geojson' #1 hour M4.5+
     #FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson' #1 day M4.5+
-    FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson' #7 days M4.5+
+    FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson' #7 days M4.5+
 
     main(filepath, FEEDURL)
