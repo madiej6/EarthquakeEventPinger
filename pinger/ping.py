@@ -38,8 +38,16 @@ def get_feed_as_json_dict() -> Dict:  # Get the list of event IDs in the current
     return jdict
 
 
-def get_eventID_list(jdict: Dict): # Get list of USA event IDs in FEEDURL
-    eqIDlist = {}
+def get_eventID_list(jdict: Dict) -> Dict: 
+    """Get a dictionary of USA event data.
+    
+    This function iterates through the events in the json returned by the FEEDURL and
+    checks to see if the epicenter of the event is located within the USA. If so, the
+    json content is converted into the dataclass called EarthquakeEvent and added to a
+    dictionary where the key is the event id, and the value is the EarthquakeEvent dataclass.
+    """
+    
+    events = {}
     for earthquake in jdict['features']:
         epiX = earthquake['geometry']['coordinates'][0]
         epiY = earthquake['geometry']['coordinates'][1]
@@ -47,13 +55,13 @@ def get_eventID_list(jdict: Dict): # Get list of USA event IDs in FEEDURL
         # check to see if earthquake is within continental US
         if check_within_us(epiX, epiY) is True:
             
-            eqIDlist[earthquake['id']]=EarthquakeEvent(
+            # populate the EarthquakeEvent data class from the json
+            events[earthquake['id']]=EarthquakeEvent(
                 event_id=earthquake['id'],
                 lat=earthquake['geometry']['coordinates'][0],
                 lon=earthquake['geometry']['coordinates'][1],
                 depth=earthquake['geometry']['coordinates'][2],
                 mag=earthquake['properties']['mag'],
-                
                 place=earthquake['properties']['place'],
                 timestamp=earthquake['properties']['time'],
                 overview_url=earthquake['properties']['url'],
@@ -62,8 +70,7 @@ def get_eventID_list(jdict: Dict): # Get list of USA event IDs in FEEDURL
                 updated_timestamp=earthquake['properties']['updated']
             )
 
-
-    return eqIDlist
+    return events
 
 
 def download_shakemap_zips(eqIDlist, filepath):
