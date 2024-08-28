@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+ShakeMaps/
+
 # Distribution / packaging
 .Python
 build/
