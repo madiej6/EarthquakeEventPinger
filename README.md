@@ -15,7 +15,7 @@ Code has been modified from this original source: https://gist.github.com/mhearn
 **Requirements:** 
 Python 3.7
 
-**Environment Setup**
+**Environment Setup:**
 From inside of the repository, run the following command to install the required Python libraries:
 ```
 pip install -r requirements.txt
@@ -29,4 +29,7 @@ New USGS ShakeMap files will be saved in the folder called:  `../ShakeMaps`
 
 1. Specify the FEEDURL in `usgs_earthquake_event_pinger.py`. ONLY ONE of the feedurls should be un-commented, depending on the filter you want to apply to the API. For more information about FEEDURLs, go here: http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
     
-2. Run `usgs_earthquake_event_pinger.py`  
+2. Run the EarthquakeEventPinger:
+```
+python ping.py
+```
