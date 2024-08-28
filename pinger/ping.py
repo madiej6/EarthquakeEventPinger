@@ -283,16 +283,16 @@ def main(source_url: str):
     if len(events) == 0:
         print('No new events available in USGS FEEDURL. Exiting.')
         log(log_path, 'No new events.')
-        sys.exit(1)
+        return
     else:
-        print("New earthquake events found: {}".format(len(events)))
-        log(log_path, 'New earthquake events found.')
+        print(f"{len(events)} new earthquake events found.")
+        log(log_path, f'{len(events)} earthquake events found.')
 
     # Download ShakeMaps for all new and updated events, return list of new folders
-    EventFilePaths = download_shakemap_zips(events, filepath)
+    EventFilePaths = download_shakemap_zips(events, output_path)
 
     print("Completed Running Earthquake Event Pinger.")
-    log(logpath, 'Updates complete.')
+    log(log_path, 'Updates complete.')
     toc = time.time()
     print('Time elapsed: {} seconds'.format(toc - tic))
 
@@ -300,5 +300,4 @@ def main(source_url: str):
 
 
 if __name__ == '__main__':
-   
     main(FEEDURL)
