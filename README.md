@@ -3,12 +3,12 @@ Automatically detect new data and download USGS ShakeMap GIS files for earthquak
 
 ## Description
 
-This script will download all new (OR REVIEWED/UPDATED) ShakeMap files from a chosen USGS FeedURL (see Step 4).
-It can be set to run on a local computer's Task Scheduler to check for new events at a set repeat interval.
-GeoJSON files are zipped into GIS shapefiles, downloaded to the user's specified folder (see Step 2), and then extracted.
-Only earthquakes within the outer bounds of the Continental US, Alaska, Hawaii and Puerto Rico will be downloaded.
+This script will download all new (OR REVIEWED/UPDATED) ShakeMap files from a chosen USGS FeedURL (see Step 4). It can be set to run on a local computer's Task Scheduler to check for new events at a set repeat interval, or modified to run in the cloud and export files to a data warehouse. 
 
-Code has been modified and added to from this original source: https://gist.github.com/mhearne-usgs/6b040c0b423b7d03f4b9
+### ShakeMap Data
+ShakeMap API returns GeoJSON for each detected earthquake event. The GeoJSON is zipped into a shapefile and downloaded to the user's specified folder. Only earthquakes within the outer bounds of the Continental US, Alaska, Hawaii and Puerto Rico will be downloaded.
+
+Code has been modified from this original source: https://gist.github.com/mhearne-usgs/6b040c0b423b7d03f4b9
 
 ## Developer Setup
 
@@ -16,7 +16,7 @@ Code has been modified and added to from this original source: https://gist.gith
 Python 3.7
 
 **Environment Setup**
-From inside of the repository, run the following command to install all required Python libraries:
+From inside of the repository, run the following command to install the required Python libraries:
 ```
 pip install -r requirements.txt
 ```
