@@ -45,6 +45,12 @@ def get_eventID_list(jdict: Dict) -> Dict:
     checks to see if the epicenter of the event is located within the USA. If so, the
     json content is converted into the dataclass called EarthquakeEvent and added to a
     dictionary where the key is the event id, and the value is the EarthquakeEvent dataclass.
+    
+    Args:
+        jdict (Dict): dictionary of events returned by the FEEDURL
+        
+    Returns:
+        events (Dict): dictionary containing USA earthquake events, where the key is the event id, and the value is the EarthquakeEvent dataclass
     """
     
     events = {}
