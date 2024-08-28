@@ -60,4 +60,4 @@ def check_within_us(lon: float, lat: float) -> bool:
 
 if __name__ == "__main__":
     # AustinTx = (30.266666, -97.733330)
-    check_within_us(lon=-1197.733330, lat=30.266666)
+    check_within_us(lon=-97.733330, lat=30.266666)
