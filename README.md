@@ -28,7 +28,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-New USGS ShakeMap files will be saved in the folder called:  `../ShakeMaps`
+New USGS ShakeMap files will be saved in the folder called:  `ShakeMaps/`
 
 **Steps:**
 
