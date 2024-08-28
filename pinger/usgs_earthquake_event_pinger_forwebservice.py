@@ -11,7 +11,7 @@ import zipfile
 import StringIO
 import datetime, time
 import shutil
-from log_earthquake import log
+from pinger.log_earthquake import log
 
 
 def get_FEEDURL_as_json_dictionary(FEEDURL):  # Get the list of event IDs in the current feed
