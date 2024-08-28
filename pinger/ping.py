@@ -1,4 +1,3 @@
-import arcpy
 try:
     from urllib2 import urlopen
 except:
@@ -8,13 +7,29 @@ import json
 import sys
 import os
 import zipfile
-import StringIO
+from io import StringIO
 import datetime, time
-from pinger.log_earthquake import log
-from pinger.constants import output_path, FEEDURL
+from typing import Dict
+from constants import OUTPUT_DIR_NAME, FEEDURL
+from data_models import EarthquakeEvent
 
+def log(log_path: str, msg: str):
+    """Writes an update to the log."""
 
-def get_FEEDURL_as_json_dictionary(FEEDURL):  # Get the list of event IDs in the current feed
+    timenow = datetime.datetime.now().strftime('%Y%m%d %I:%M %p')
+    f = open(os.path.join(log_path, "run_log.txt"), "r+")
+    newline = "{} {}\n".format(timenow, msg)
+    oline = f.readlines()
+    oline.insert(0, newline)
+    f.close()
+
+    f = open(os.path.join(log_path, "run_log.txt"), "w")
+    f.writelines(oline)
+    f.close()
+
+    return
+
+def get_feed_as_json_dict() -> Dict:  # Get the list of event IDs in the current feed
     fh = urlopen(FEEDURL)  # open a URL connection to the event feed.
     data = fh.read()  # read all of the data from that URL into a string
     fh.close()
@@ -23,7 +38,7 @@ def get_FEEDURL_as_json_dictionary(FEEDURL):  # Get the list of event IDs in the
     return jdict
 
 
-def get_eventID_list(jdict): # Get list of USA event IDs in FEEDURL
+def get_eventID_list(jdict: Dict): # Get list of USA event IDs in FEEDURL
     eqIDlist = {}
     for earthquake in jdict['features']:
         epiX = earthquake['geometry']['coordinates'][0]
@@ -31,28 +46,22 @@ def get_eventID_list(jdict): # Get list of USA event IDs in FEEDURL
 
         # check to see if earthquake is within continental US
         if check_within_us(epiX, epiY) is True:
-            time = str(earthquake['properties']['time'])
-            eventid = earthquake['id']
-            updated = str(earthquake['properties']['updated'])
+            
+            eqIDlist[earthquake['id']]=EarthquakeEvent(
+                event_id=earthquake['id'],
+                lat=earthquake['geometry']['coordinates'][0],
+                lon=earthquake['geometry']['coordinates'][1],
+                depth=earthquake['geometry']['coordinates'][2],
+                mag=earthquake['properties']['mag'],
+                
+                place=earthquake['properties']['place'],
+                timestamp=earthquake['properties']['time'],
+                overview_url=earthquake['properties']['url'],
+                data_url=earthquake['properties']['detail'],
+                status=earthquake['properties']['status'],
+                updated_timestamp=earthquake['properties']['updated']
+            )
 
-            eqIDlist.update({earthquake['id']:\
-                                 [earthquake['geometry']['coordinates'][0],  # epiX
-                                  earthquake['geometry']['coordinates'][1],  # epiY
-                                  earthquake['geometry']['coordinates'][2],  # depth
-                                  str(earthquake['properties']['title']),  # title
-                                  earthquake['properties']['mag'],  # magnitude
-                                  str(earthquake['properties']['time']),  # time
-                                  datetime.datetime.fromtimestamp(int(time[:-3])).strftime('%c'),  # time_
-                                  str(earthquake['properties']['place']),  # place
-                                  str(earthquake['properties']['url']),  # url
-                                  str(eventid),  # eventid
-                                  str(earthquake['properties']['status']), #status
-                                  str(earthquake['properties']['updated']),  # updated
-                                  datetime.datetime.fromtimestamp(int(updated[:-3])).strftime('%c'),  # updated_
-                                  earthquake['properties']['detail']]  # event url
-                             })
-        else:
-            continue
 
     return eqIDlist
 
@@ -236,26 +245,23 @@ def download_shakemap_zips(eqIDlist, filepath):
     return EventFilePaths
 
 
-def main(filepath, FEEDURL):
+def main(source_url: str):
     tic = time.time()
     print('Running Earthquake Event Pinger.')
 
-    if not os.path.isdir(filepath):
-        os.mkdir(filepath)
-    logpath = os.path.join(filepath, "log")
-    if not os.path.isdir(logpath):
-        os.mkdir(logpath)
-        f = open(os.path.join(logpath, "run_log.txt"), "w+")
+    # Get the current working directory
+    output_path = os.path.join(os.getcwd(), OUTPUT_DIR_NAME)
+    log_path = os.path.join(output_path, "log")
+    if not os.path.isdir(output_path):
+        os.mkdir(output_path)
+    if not os.path.isdir(log_path):
+        os.mkdir(log_path)
+        f = open(os.path.join(log_path, "run_log.txt"), "w+")
         f.close()
 
-    log(logpath, 'Checking FEEDURL.')
+    log(log_path, 'Checking FEEDURL.')
 
-    try:
-        jdict = get_FEEDURL_as_json_dictionary(FEEDURL)
-    except:
-        print('Internet connection problem.')
-        log(logpath, 'ERROR: Internet connection problem.')
-        sys.exit(1)
+    jdict = get_feed_as_json_dict()
 
     eqIDlist = get_eventID_list(jdict)
 
@@ -280,4 +286,4 @@ def main(filepath, FEEDURL):
 
 if __name__ == '__main__':
    
-    main(output_path, FEEDURL)
+    main(FEEDURL)
