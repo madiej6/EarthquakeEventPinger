@@ -36,7 +36,7 @@ def coords_to_polygon(left: float, right: float, top: float, bottom: float):
     ]
 
     # Return a polygon using the coordinates
-    return = Polygon(coordinates)
+    return Polygon(coordinates)
 
 
 def check_within_us(lon: float, lat: float) -> bool:
@@ -44,16 +44,20 @@ def check_within_us(lon: float, lat: float) -> bool:
 
     point = Point(lon, lat)
     
-    # Check if the point is within the polygon
-    is_inside = polygon.contains(point)
-
     US = coords_to_polygon(USleft, USright, UStop, USbottom)
     AK = coords_to_polygon(AKleft, AKright, AKtop, AKbottom)
     HI = coords_to_polygon(HIleft, HIright, HItop, HIbottom)
     PR = coords_to_polygon(PRleft, PRright, PRtop, PRbottom)
 
     for bounds in [US, AK, HI, PR]:
+        # Check if the point is within the polygon
         if bounds.contains(point):
+            print("Lat/Lon is within the USA!")
             return True
 
+    print("Lat/Lon is NOT within the USA.")
     return False
+
+if __name__ == "__main__":
+    # AustinTx = (30.266666, -97.733330)
+    check_within_us(lon=-1197.733330, lat=30.266666)
