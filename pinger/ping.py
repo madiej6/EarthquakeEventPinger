@@ -38,7 +38,7 @@ def get_feed_as_json_dict() -> Dict:  # Get the list of event IDs in the current
     return jdict
 
 
-def get_eventID_list(jdict: Dict) -> Dict: 
+def get_events(jdict: Dict) -> Dict: 
     """Get a dictionary of USA event data.
     
     This function iterates through the events in the json returned by the FEEDURL and
@@ -55,11 +55,11 @@ def get_eventID_list(jdict: Dict) -> Dict:
     
     events = {}
     for earthquake in jdict['features']:
-        epiX = earthquake['geometry']['coordinates'][0]
-        epiY = earthquake['geometry']['coordinates'][1]
+        epicenter_lat = earthquake['geometry']['coordinates'][0]
+        epicenter_lon = earthquake['geometry']['coordinates'][1]
 
         # check to see if earthquake is within continental US
-        if check_within_us(epiX, epiY) is True:
+        if check_within_us(lat=epicenter_lat, lon=epicenter_lon) is True:
             
             # populate the EarthquakeEvent data class from the json
             events[earthquake['id']]=EarthquakeEvent(
@@ -274,20 +274,22 @@ def main(source_url: str):
 
     log(log_path, 'Checking FEEDURL.')
 
+    # get the json dict of events from the FEEDURL
     jdict = get_feed_as_json_dict()
 
-    eqIDlist = get_eventID_list(jdict)
+    # clean up the json dict of events, & keep only the events in USA
+    events = get_events(jdict)
 
-    if len(eqIDlist) == 0:
+    if len(events) == 0:
         print('No new events available in USGS FEEDURL. Exiting.')
-        log(logpath, 'No new events.')
+        log(log_path, 'No new events.')
         sys.exit(1)
     else:
-        print("New earthquake events found: {}".format(len(eqIDlist)))
-        log(logpath, 'New earthquake events found.')
+        print("New earthquake events found: {}".format(len(events)))
+        log(log_path, 'New earthquake events found.')
 
     # Download ShakeMaps for all new and updated events, return list of new folders
-    EventFilePaths = download_shakemap_zips(eqIDlist, filepath)
+    EventFilePaths = download_shakemap_zips(events, filepath)
 
     print("Completed Running Earthquake Event Pinger.")
     log(logpath, 'Updates complete.')
