@@ -11,6 +11,7 @@ import zipfile
 import StringIO
 import datetime, time
 from pinger.log_earthquake import log
+from pinger.constants import output_path, FEEDURL
 
 
 def get_FEEDURL_as_json_dictionary(FEEDURL):  # Get the list of event IDs in the current feed
@@ -278,12 +279,5 @@ def main(filepath, FEEDURL):
 
 
 if __name__ == '__main__':
-    # Set filepath to save ShakeMap files in
-    filepath = r"C:\ShakeMaps"
-    # Select FEEDURL - only uncomment ONE of these - from here: http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
-    #FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson'  # Significant Events - 1 week
-    #FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_hour.geojson' #1 hour M4.5+
-    #FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson' #1 day M4.5+
-    FEEDURL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson' #7 days M4.5+
-
-    main(filepath, FEEDURL)
+   
+    main(output_path, FEEDURL)
