@@ -1,30 +1,3 @@
-#-------------------------------------------------------------------------------
-# Name:        usgs_earthquake_event_pinger.py
-# Purpose:      Check USGS database of "Significant Events" that have occurred
-#               in the last week, if any events have been added, download and
-#               extract ShakeMap shapefiles to a specified local folder.
-#
-# Author:      Madeline Jones,
-#              New Light Technologies, Inc
-#              madeline.jones@nltgis.com
-#
-# Created:     04/26/2017
-# Last update: 10/15/2018
-#
-#-------------------------------------------------------------------------------
-
-# USGS ShakeMap Import Script - modified from:
-#    https://gist.github.com/mhearne-usgs/6b040c0b423b7d03f4b9
-# Live feeds are found here:
-#    http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
-
-
-# Modify Proxy Settings when inside a secure/government network
-#os.environ["HTTP_PROXY"] = ""
-#os.environ["HTTPS_PROXY"] = ""
-
-
-# Imports
 import arcpy
 try:
     from urllib2 import urlopen
