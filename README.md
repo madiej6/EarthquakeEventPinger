@@ -18,7 +18,7 @@ Code has been modified from [this](https://gist.github.com/mhearne-usgs/6b040c0b
 ## Developer Setup
 
 **Requirements:** 
-Python 3.7
+Python 3.7+
 
 **Environment Setup:**
 From inside of the repository, run the following command to install the required Python libraries:

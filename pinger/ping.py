@@ -1,17 +1,23 @@
-try:
-    from urllib2 import urlopen
-except:
-    from urllib.request import urlopen
+from urllib.request import urlopen
 from within_usa import check_within_us
 import json
-import sys
+from shapely import Point
 import os
-import zipfile
-from io import StringIO
+from zipfile import ZipFile, ZIP_DEFLATED
+from io import BytesIO, _io
 import datetime, time
 from typing import Dict
 from constants import OUTPUT_DIR_NAME, FEEDURL
 from data_models import EarthquakeEvent
+import pandas as pd
+
+def extract(bytebuf: _io.BytesIO, fpath: str):
+    # create a ZipFile object, instantiated with our file-like StringIO object.
+    # extract all of the data from that StringIO object into files in the provided output directory.
+    myzip = ZipFile(bytebuf, 'r', ZIP_DEFLATED)
+    myzip.extractall(fpath)
+    myzip.close()
+    bytebuf.close()
 
 def log(log_path: str, msg: str):
     """Writes an update to the log."""
@@ -37,8 +43,13 @@ def get_feed_as_json_dict() -> Dict:  # Get the list of event IDs in the current
 
     return jdict
 
+def update_log_status(eq: EarthquakeEvent, eventdir: str):
+    # write status and timestamp to the event_info.txt
+    f = open(os.path.join(eventdir, "event_info.txt"), "w+")
+    f.write(f"{eq.status}\r\n{eq.updated_timestamp}\r\n")
+    f.close()
 
-def get_events(jdict: Dict) -> Dict: 
+def get_events(jdict: Dict) -> Dict[str,EarthquakeEvent]: 
     """Get a dictionary of USA event data.
     
     This function iterates through the events in the json returned by the FEEDURL and
@@ -65,8 +76,8 @@ def get_events(jdict: Dict) -> Dict:
             # populate the EarthquakeEvent data class from the json
             events[earthquake['id']]=EarthquakeEvent(
                 event_id=earthquake['id'],
-                lat=earthquake['geometry']['coordinates'][0],
-                lon=earthquake['geometry']['coordinates'][1],
+                lat=epicenter_lat,
+                lon=epicenter_lon,
                 depth=earthquake['geometry']['coordinates'][2],
                 mag=earthquake['properties']['mag'],
                 place=earthquake['properties']['place'],
@@ -79,184 +90,106 @@ def get_events(jdict: Dict) -> Dict:
 
     return events
 
+def create_epicenter_csv(eq: EarthquakeEvent, eventdir: str):
 
-def download_shakemap_zips(eqIDlist, filepath):
-    EventFilePaths = []
-    for event, keys in eqIDlist.items():
-        print('Event ID: {}'.format(event))
+    # update empty point with epicenter lat/long
+    epicenter = Point(eq.lon, eq.lat)
 
-        epiX = keys[0]
-        epiY = keys[1]
-        depth = keys[2]
-        title = keys[3]
-        mag = keys[4]
-        time = keys[5]
-        time_ = keys[6]
-        place = keys[7]
-        url = keys[8]
-        eventid = keys[9]
-        status = keys[10]
-        updated = keys[11]
-        updated_ = keys[12]
-        eventurl = keys[13]
+    # define the column names and data types, insert into geodataframe, then convert to shapefile
+    data = {
+        'event_id': pd.Series([eq.event_id], dtype='str'),
+        'title': pd.Series([eq.name], dtype='str'),
+        'magnitude': pd.Series([eq.mag], dtype='float64'),
+        'date_time': pd.Series([eq.timestamp], dtype='datetime64[ns]'),
+        'place': pd.Series([eq.place], dtype='str'),
+        'depth_km': pd.Series([eq.depth], dtype='float64'),
+        'url': pd.Series([eq.overview_url], dtype='str'),
+        'status': pd.Series([eq.status], dtype='str'),
+        'updated': pd.Series([eq.updated_timestamp], dtype='datetime64[ns]'),
+        'geometry': pd.Series([epicenter.wkt], dtype='str'),
+    }
+    df = pd.DataFrame(data)
+    # export epicenter to csv (geometry col is in WKT format)
+    df.to_csv(os.path.join(eventdir,"epicenter.csv"), index=False)
 
-        fh = urlopen(eventurl)  # open event-specific url
+
+def download_shakemap(events: Dict[str,EarthquakeEvent], output_path: str):
+    filepaths = []
+    for event_id, eq in events.items():
+        print('Event ID: {}'.format(event_id))
+
+        fh = urlopen(eq.data_url)  # open event-specific url
         data = fh.read()  # read event data into a string
         fh.close()
-        jdict2 = json.loads(data) # and parse using json module as before
-        if 'shakemap' not in jdict2['properties']['products'].keys():
-            print('Event {} does not have a ShakeMap product associated with it. Exiting.'.format(event))
+        jdict = json.loads(data) # and parse using json module as before
+        if 'shakemap' not in jdict['properties']['products'].keys():
+            print('Event {} does not have a ShakeMap product associated with it. Exiting.'.format(event_id))
             continue
-        shakemap = jdict2['properties']['products']['shakemap'][0]  # get the first shakemap associated with the event
-        shapezipurl = shakemap['contents']['download/shape.zip']['url']  # get the download url for the shape zipfile
-        epicenterurl = shakemap['contents']['download/epicenter.kmz']['url']
 
-        # EXTRACT SHAKEMAP ZIP FILE IN NEW FOLDER
+        # get the first shakemap associated with the event
+        shakemap = jdict['properties']['products']['shakemap'][0]
+        # get the download url for the shape zipfile
+        shapezipurl = shakemap['contents']['download/shape.zip']['url']  
 
-        # Here, read the binary zipfile into a string
+        # read the binary zipfile into a string
         fh = urlopen(shapezipurl)
         data = fh.read()
         fh.close()
 
-        # Create a StringIO object, which behaves like a file
-        stringbuf = StringIO.StringIO(data)
-        eventdir = "{}\{}".format(filepath, str(eventid))
+        # Create a BytesIO object, which behaves like a file
+        bytebuf = BytesIO(data)
+        eventdir = os.path.join(output_path, event_id)
 
         # Creates a new folder (called the eventid) if it does not already exist
         if not os.path.isdir(eventdir):
             os.mkdir(eventdir)
-            print("Folder created for Event ID: {}".format(eventid))
+            print(f"Folder created for Event ID: {event_id}")
 
-            # Create a StringIO object, which behaves like a file
-            stringbuf = StringIO.StringIO(data)
-            eventdir = "{}\{}".format(filepath, str(eventid))
+            extract(bytebuf, eventdir)
+            update_log_status(eq, eventdir)
+            create_epicenter_csv(eq, eventdir)
 
-            # Create a ZipFile object, instantiated with our file-like StringIO object.
-            # Extract all of the data from that StringIO object into files in the provided output directory.
-            myzip = zipfile.ZipFile(stringbuf, 'r', zipfile.ZIP_DEFLATED)
-            myzip.extractall(eventdir)
-            myzip.close()
-            stringbuf.close()
-
-            f = open(eventdir+"\\eventInfo.txt","w+")
-            f.write("{}\r\n{}\r\n".format(status,updated))
-            f.close()
-
-            # Update empty point with epicenter lat/long
-            pnt = arcpy.Point()
-            pnt.X = epiX
-            pnt.Y = epiY
-
-            # Add fields to Epicenter shapefile
-            arcpy.CreateFeatureclass_management(eventdir, "Epicenter", "POINT", "", "", "", 4326)
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Title", "TEXT", "", "", "", "Event")
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Mag", "FLOAT", "", "", "", "Magnitude")
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Date_Time", "TEXT", "", "", "", "Date/Time")
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Place", "TEXT", "", "", "", "Place")
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Depth_km", "FLOAT", "", "", "", "Depth (km)")
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Url", "TEXT", "", "", "", "Url")
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "EventID", "TEXT", "", "", "", "Event ID")
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Status", "TEXT", "", "", "", "Status")
-            arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Updated", "TEXT", "", "", "", "Updated")
-
-            # Add earthquake info to Epicenter attribute table
-            curs = arcpy.da.InsertCursor("{}\Epicenter.shp".format(eventdir),
-                                         ["Title", "Mag", "Date_Time", "Place",
-                                          "Depth_km", "Url", "EventID", "Status", "Updated"])
-            curs.insertRow((title, mag, time_, place, depth, url, eventid, status, updated_))
-            del curs
-
-            # Add XY point data to Epicenter shapefile
-            with arcpy.da.UpdateCursor("{}\Epicenter.shp".format(eventdir),"SHAPE@XY") as cursor:
-                for eq in cursor:
-                    eq[0] = pnt
-                    cursor.updateRow(eq)
-
-            filelist = os.listdir(eventdir)
-            print('ShakeMap files extracted for Event ID: {} to folder: {}'.format(eventid, eventdir))
-            EventFilePaths.append(eventdir)
+            print(f'ShakeMap files extracted for Event ID: {event_id} to folder: {eventdir}')
+            filepaths.append(eventdir)
 
         else:
-            print("Folder exists for Event ID: {}".format(eventid))
+            print(f"Folder exists for Event ID: {event_id}")
 
             # go into folder and read former status and update time
-            f = open(eventdir+"\\eventInfo.txt","r")
-            oldstatus = f.readline()
-            oldstatus = oldstatus.rstrip()
-            oldupdated = f.readline()
-            oldupdated = oldupdated.rstrip()
+            f = open(os.path.join(eventdir, "event_info.txt"),"r")
+            oldstatus = f.readline().rstrip()
+            oldupdated = f.readline().rstrip()
             f.close()
 
             # check to see if new dataset has been updated or has a new status
-            t = 1
-            if status == oldstatus:
-                t = 0
-            if int(updated) > int(oldupdated) or t == 1:
+            if eq.status == oldstatus:
+                status_change = False
+            else:
+                status_change = True
 
-                # delete all old files
-                for root, dirs, files in os.walk(eventdir):
+            if (eq.updated_timestamp > int(oldupdated)) or status_change:
+
+                # replace all old files
+                # future update: move old files into archival folder, named using the old timestamp, instead of deleting
+                for _, _, files in os.walk(eventdir):
                     for filename in files:
-                        if filename != "eventInfo.txt":
-                            try: os.remove(eventdir + "\\" + filename)
-                            except: None
+                        if filename != "event_info.txt":
+                            os.remove(os.path.join(eventdir,filename))
 
-                print("Update detected for Event ID: {}".format(eventid))
-                print("Old files have been deleted. New files are unzipping.")
+                print(f"Update detected for Event ID: {event_id}")
+                print("Old files have been deleted. Extracting updated files.")
 
-                # Create a StringIO object, which behaves like a file
-                stringbuf = StringIO.StringIO(data)
-                #eventdir = "{}\{}".format(filepath, str(eventid))
+                extract(bytebuf, eventdir)
+                update_log_status(eq, eventdir)
+                create_epicenter_csv(eq, eventdir)
 
-                # Create a ZipFile object, instantiated with our file-like StringIO object.
-                # Extract all of the data from that StringIO object into files in the provided output directory.
-                myzip = zipfile.ZipFile(stringbuf, 'r', zipfile.ZIP_DEFLATED)
-                myzip.extractall(eventdir)
-                myzip.close()
-                stringbuf.close()
-
-                f = open(eventdir+"\\eventInfo.txt", "w+")
-                f.write("{}\r\n{}\r\n".format(status, updated))
-                f.close()
-
-                # Update empty point with epicenter lat/long
-                pnt = arcpy.Point()
-                pnt.X = epiX
-                pnt.Y = epiY
-
-                # Add fields to Epicenter shapefile
-                arcpy.CreateFeatureclass_management(eventdir, "Epicenter", "POINT", "", "", "", 4326)
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Title", "TEXT", "", "", "", "Event")
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Mag", "FLOAT", "", "", "", "Magnitude")
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Date_Time", "TEXT", "", "", "", "Date/Time")
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Place", "TEXT", "", "", "", "Place")
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Depth_km", "FLOAT", "", "", "", "Depth (km)")
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Url", "TEXT", "", "", "", "Url")
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "EventID", "TEXT", "", "", "", "Event ID")
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Status", "TEXT", "", "", "", "Status")
-                arcpy.AddField_management("{}\Epicenter.shp".format(eventdir), "Updated", "TEXT", "", "", "", "Updated")
-
-                # Add earthquake info to Epicenter attribute table
-                curs = arcpy.da.InsertCursor("{}\Epicenter.shp".format(eventdir),
-                                             ["Title", "Mag", "Date_Time", "Place",
-                                              "Depth_km", "Url", "EventID", "Status", "Updated"])
-                curs.insertRow((title, mag, time_, place, depth, url, eventid, status, updated_))
-                del curs
-
-                # Add XY point data to Epicenter shapefile
-                with arcpy.da.UpdateCursor("{}\Epicenter.shp".format(eventdir),"SHAPE@XY") as cursor:
-                    for eq in cursor:
-                        eq[0] = pnt
-                        cursor.updateRow(eq)
-
-                print('ShakeMap files extracted for Event ID: {} to folder: {}'.format(eventid, eventdir))
-                EventFilePaths.append(eventdir)
-
-
+                print(f'ShakeMap files extracted for Event ID: {event_id} to folder: {eventdir}')
+                filepaths.append(eventdir)
 
             else:
-                print("No update detected for Event ID: {}".format(eventid))
+                print(f"No update detected for Event ID: {event_id}")
 
-    return EventFilePaths
+    return filepaths
 
 
 def main(source_url: str):
@@ -290,14 +223,14 @@ def main(source_url: str):
         log(log_path, f'{len(events)} earthquake events found.')
 
     # Download ShakeMaps for all new and updated events, return list of new folders
-    EventFilePaths = download_shakemap_zips(events, output_path)
+    filepaths = download_shakemap(events, output_path)
 
     print("Completed Running Earthquake Event Pinger.")
     log(log_path, 'Updates complete.')
     toc = time.time()
-    print('Time elapsed: {} seconds'.format(toc - tic))
+    print(f'Time elapsed: {(toc - tic):.2f} seconds')
 
-    return EventFilePaths
+    return filepaths
 
 
 if __name__ == '__main__':
