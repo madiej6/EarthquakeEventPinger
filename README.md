@@ -13,7 +13,7 @@ ShakeMap API returns GeoJSON for each detected earthquake event. The data within
 
 For each earthquake event in the USA, the following files are generated/extracted:
 
-**Custom generated files:**
+**Generated files:**
 - `epicenter.csv` - csv containing the following information about the earthquake:
   - event_id
   - title
@@ -27,7 +27,7 @@ For each earthquake event in the USA, the following files are generated/extracte
   - geometry (lat/lon of epicenter)
 - `event_info.txt` - log file containing information about the event status (whether or not the files have been reviewed, udpated, etc) and timestamps  
 
-**ShakeMap GIS files:**
+**USGS ShakeMap GIS files:**
 - `mi.shp` - macroseismic intensity
 - `pga.shp` - peak ground acceleration
 - `pgv.shp` - peak ground velocity
