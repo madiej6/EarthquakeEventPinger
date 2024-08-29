@@ -1,17 +1,39 @@
 # EarthquakeEventPinger
 Automatically detect new data and download USGS ShakeMap GIS files for earthquakes.
 
-*Created: 4/26/2017*
+*Created: 4/26/2017*  
 *Last update: 8/27/2024*
 
 ## Description
 
-This script will download all new (OR REVIEWED/UPDATED) ShakeMap files from a chosen USGS FeedURL (see Step 4). It can be set to run on a local computer's Task Scheduler to check for new events at a set repeat interval, or modified to run in the cloud and export files to a data warehouse. 
+This script will download all new (or reviewed/updated) ShakeMap files from a chosen USGS [FeedURL](http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php). It can be set to run on a local computer's Task Scheduler to check for new events at a set repeat interval, or modified to run in the cloud and export files to a data warehouse. 
 
 ### ShakeMap Data
-ShakeMap API returns GeoJSON for each detected earthquake event. The GeoJSON is zipped into a shapefile and downloaded to the user's specified folder. Only earthquakes within the outer bounds of the Continental US, Alaska, Hawaii and Puerto Rico will be downloaded.
+ShakeMap API returns GeoJSON for each detected earthquake event. The data within the GeoJSON is extracted to the user's specified folder. In addition, a csv is generated using the epicenter lat/lon (WKT), and includes other attributes available within the GeoJSON. Only earthquakes within the outer bounds of the Continental US, Alaska, Hawaii and Puerto Rico will be downloaded.
 
-More information on the GeoJSON source data format [here](http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php).
+For each earthquake event in the USA, the following files are generated/extracted:
+
+**Custom generated files:**
+- `epicenter.csv` - csv containing the following information about the earthquake:
+  - event_id
+  - title
+  - magnitude
+  - date_time
+  - place
+  - depth_km
+  - url
+  - status
+  - updated
+- `event_info.txt` - log file containing information about the event status (whether or not the files have been reviewed, udpated, etc) and timestamps  
+
+**ShakeMap GIS files:**
+- `mi.shp` - macroseismic intensity
+- `pga.shp` - peak ground acceleration
+- `pgv.shp` - peak ground velocity
+- `psa0p3.shp` - 0.3 second peak spectral acceleration
+- `psa1p0.shp` - 1.0 second peak spectral acceleration
+- `psa3p0.shp` - 3.0 second peak spectral acceleration
+
 
 Code has been modified from [this](https://gist.github.com/mhearne-usgs/6b040c0b423b7d03f4b9) original source.
 
