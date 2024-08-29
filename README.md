@@ -11,7 +11,7 @@ This script will download all new (or reviewed/updated) ShakeMap files from a ch
 ### ShakeMap Data
 ShakeMap API returns GeoJSON for each detected earthquake event. The data within the GeoJSON is extracted to the user's specified folder. In addition, a csv is generated using the epicenter lat/lon (WKT), and includes other attributes available within the GeoJSON. Only earthquakes within the outer bounds of the Continental US, Alaska, Hawaii and Puerto Rico will be downloaded.
 
-For each earthquake event in the USA, the following files are generated/extracted:
+For each earthquake event detected in the FeedURL that is located within the USA (CONUS, AK, HI, PR), the following files are generated/extracted:
 
 **Generated files:**
 - `epicenter.csv` - csv containing the following information about the earthquake:
@@ -59,5 +59,5 @@ New USGS ShakeMap files will be saved in the folder called:  `ShakeMaps/`
     
 2. Run the EarthquakeEventPinger:
 ```
-python ping.py
+python pinger/ping.py
 ```
