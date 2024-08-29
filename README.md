@@ -54,7 +54,7 @@ New USGS ShakeMap files will be saved in the folder called:  `ShakeMaps/`
 
 **Steps:**
 
-1. Specify the FEEDURL in `usgs_earthquake_event_pinger.py`. ONLY ONE of the feedurls should be un-commented, depending on the filter you want to apply to the API. For more information about FEEDURLs, go here: http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
+1. Specify the FEEDURL in `constants.py`. ONLY ONE of the feedurls should be un-commented, depending on the filter you want to apply to the API. Read more information about FEEDURLs [here](http://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php).
     
 2. Run the EarthquakeEventPinger:
 ```
