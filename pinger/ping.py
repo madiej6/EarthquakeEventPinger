@@ -12,15 +12,26 @@ from data_models import EarthquakeEvent
 import pandas as pd
 
 def extract(bytebuf: _io.BytesIO, fpath: str):
-    # create a ZipFile object, instantiated with our file-like StringIO object.
-    # extract all of the data from that StringIO object into files in the provided output directory.
+    """Extract all files from the BytesIO object"""
+
+    # extract all of the data from that BytesIO object into files in the provided output directory.
     myzip = ZipFile(bytebuf, 'r', ZIP_DEFLATED)
     myzip.extractall(fpath)
     myzip.close()
     bytebuf.close()
 
 def log(log_path: str, msg: str):
-    """Writes an update to the log."""
+    """Writes an update to the log. 
+
+    Example log entries:
+    20240828 07:09 PM Checking FEEDURL.
+    20240828 07:08 PM Updates complete.
+    20240828 07:08 PM 3 earthquake events found.
+    
+    Args:
+        log_path (str): file path to the run log
+        msg (str): the message to write to the log
+    """
 
     timenow = datetime.datetime.now().strftime('%Y%m%d %I:%M %p')
     f = open(os.path.join(log_path, "run_log.txt"), "r+")
@@ -33,9 +44,8 @@ def log(log_path: str, msg: str):
     f.writelines(oline)
     f.close()
 
-    return
-
-def get_feed_as_json_dict() -> Dict:  # Get the list of event IDs in the current feed
+def get_feed_as_json_dict() -> Dict:  
+    """Get the content from the feed url as a json dictionary"""
     fh = urlopen(FEEDURL)  # open a URL connection to the event feed.
     data = fh.read()  # read all of the data from that URL into a string
     fh.close()
@@ -44,7 +54,7 @@ def get_feed_as_json_dict() -> Dict:  # Get the list of event IDs in the current
     return jdict
 
 def update_log_status(eq: EarthquakeEvent, eventdir: str):
-    # write status and timestamp to the event_info.txt
+    """Write the eastatus and timestamp to the event_info.txt"""
     f = open(os.path.join(eventdir, "event_info.txt"), "w+")
     f.write(f"{eq.status}\r\n{eq.updated_timestamp}\r\n")
     f.close()

@@ -24,6 +24,7 @@ For each earthquake event in the USA, the following files are generated/extracte
   - url
   - status
   - updated
+  - geometry (lat/lon of epicenter)
 - `event_info.txt` - log file containing information about the event status (whether or not the files have been reviewed, udpated, etc) and timestamps  
 
 **ShakeMap GIS files:**
