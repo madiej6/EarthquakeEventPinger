@@ -49,6 +49,11 @@ From inside of the repository, run the following command to install the required
 pip install -r requirements.txt
 ```
 
+If you further modify the Python environment, commit back to the requrements.txt file using:
+```
+pip list --format=freeze > requirements.txt
+```
+
 ## Usage
 
 New USGS ShakeMap files will be saved in the folder called:  `ShakeMaps/`
