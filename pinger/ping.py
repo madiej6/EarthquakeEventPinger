@@ -2,7 +2,7 @@ from urllib.request import urlopen
 from within_usa import check_within_us
 import json
 import glob
-from shapely import Point
+from shapely import Point, wkt
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO, _io
@@ -117,7 +117,7 @@ def get_events(jdict: Dict) -> Dict[str,EarthquakeEvent]:
 
     return events
 
-def create_epicenter_csv(eq: EarthquakeEvent, eventdir: str):
+def create_epicenter_gpq(eq: EarthquakeEvent, eventdir: str):
 
     # update empty point with epicenter lat/long
     epicenter = Point(eq.lon, eq.lat)
@@ -136,8 +136,10 @@ def create_epicenter_csv(eq: EarthquakeEvent, eventdir: str):
         'geometry': pd.Series([epicenter.wkt], dtype='str'),
     }
     df = pd.DataFrame(data)
-    # export epicenter to csv (geometry col is in WKT format)
-    df.to_csv(os.path.join(eventdir,"epicenter.csv"), index=False)
+    # convert df to gdf
+    df['geometry'] = df['geometry'].apply(wkt.loads)
+    gdf = gpd.GeoDataFrame(df, geometry='geometry')
+    gdf.to_parquet('epicenter.geoparquet')
 
 
 def download_shakemap(events: Dict[str,EarthquakeEvent], output_path: str):
