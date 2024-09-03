@@ -14,7 +14,7 @@ ShakeMap API returns GeoJSON for each detected earthquake event. The data within
 For each earthquake event detected in the FeedURL that is located within the USA (CONUS, AK, HI, PR), the following files are generated/extracted:
 
 **Generated files:**
-- `epicenter.geoparquet` - csv containing the following information about the earthquake:
+- `epicenter.geoparquet` - contains the following information about the earthquake:
   - event_id
   - title
   - magnitude
@@ -44,7 +44,7 @@ Code has been modified from [this](https://gist.github.com/mhearne-usgs/6b040c0b
 Python 3.7+
 
 **Environment Setup:**
-From inside of the repository, run the following command to install the required Python libraries:
+From the repository, run the following command to install the required Python libraries:
 ```
 pip install -r requirements.txt
 ```
