@@ -24,6 +24,7 @@ def extract(bytebuf: _io.BytesIO, fpath: str):
 
     shp_files = [file for file in os.listdir(fpath) if file.endswith('.shp')]
 
+    # convert shapefiles to geoparquet files
     for shp in shp_files:
         shp_path = os.path.join(fpath, shp)
         gdf = gpd.read_file(shp_path)
