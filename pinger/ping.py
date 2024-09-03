@@ -80,7 +80,6 @@ def get_events(jdict: Dict) -> Dict[str,EarthquakeEvent]:
         epicenter_lat = earthquake['geometry']['coordinates'][1]
 
         # check to see if earthquake is within continental US
-        print(epicenter_lon, epicenter_lat)
         if check_within_us(lon=epicenter_lon, lat=epicenter_lat) is True:
             
             # populate the EarthquakeEvent data class from the json

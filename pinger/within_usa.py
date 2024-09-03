@@ -52,10 +52,10 @@ def check_within_us(lon: float, lat: float) -> bool:
     for bounds in [US, AK, HI, PR]:
         # Check if the point is within the polygon
         if bounds.contains(point):
-            print("Lat/Lon is within the USA!")
+            print(f"Lat/Lon is within the USA!: {lat} {lon}")
             return True
 
-    print("Lat/Lon is NOT within the USA.")
+    print(f"Lat/Lon is NOT within the USA: {lat} {lon}")
     return False
 
 if __name__ == "__main__":
