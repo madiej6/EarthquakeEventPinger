@@ -1,12 +1,14 @@
 from urllib.request import urlopen
 from within_usa import check_within_us
 import json
+import glob
 from shapely import Point
 import os
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO, _io
 import datetime, time
 from typing import Dict
+import geopandas as gpd
 from constants import OUTPUT_DIR_NAME, FEEDURL
 from data_models import EarthquakeEvent
 import pandas as pd
@@ -19,6 +21,21 @@ def extract(bytebuf: _io.BytesIO, fpath: str):
     myzip.extractall(fpath)
     myzip.close()
     bytebuf.close()
+
+    shp_files = [file for file in os.listdir(fpath) if file.endswith('.shp')]
+
+    for shp in shp_files:
+        shp_path = os.path.join(fpath, shp)
+        gdf = gpd.read_file(shp_path)
+
+        # delete the shapefiles
+        rm_files = glob.glob(os.path.join(fpath, f"{shp.replace('.shp','')}*"))
+        for file in rm_files:
+            os.remove(file)
+
+        # Write to GeoParquet
+        gpq_path = os.path.join(fpath, f"{shp.replace('.shp','')}.geoparquet")
+        gdf.to_parquet(gpq_path)
 
 def log(log_path: str, msg: str):
     """Writes an update to the log. 
