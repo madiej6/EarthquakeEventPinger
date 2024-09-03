@@ -2,7 +2,7 @@
 Automatically detect new data and download USGS ShakeMap GIS files for earthquakes.
 
 *Created: 4/26/2017*  
-*Last update: 8/27/2024*
+*Last update: 9/3/2024*
 
 ## Description
 
