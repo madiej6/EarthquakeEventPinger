@@ -139,7 +139,7 @@ def create_epicenter_gpq(eq: EarthquakeEvent, eventdir: str):
     # convert df to gdf
     df['geometry'] = df['geometry'].apply(wkt.loads)
     gdf = gpd.GeoDataFrame(df, geometry='geometry')
-    gdf.to_parquet('epicenter.geoparquet')
+    gdf.to_parquet(os.path.join(eventdir, 'epicenter.geoparquet'))
 
 
 def download_shakemap(events: Dict[str,EarthquakeEvent], output_path: str):
@@ -176,7 +176,7 @@ def download_shakemap(events: Dict[str,EarthquakeEvent], output_path: str):
 
             extract(bytebuf, eventdir)
             update_log_status(eq, eventdir)
-            create_epicenter_csv(eq, eventdir)
+            create_epicenter_gpq(eq, eventdir)
 
             print(f'ShakeMap files extracted for Event ID: {event_id} to folder: {eventdir}')
             filepaths.append(eventdir)
@@ -210,7 +210,7 @@ def download_shakemap(events: Dict[str,EarthquakeEvent], output_path: str):
 
                 extract(bytebuf, eventdir)
                 update_log_status(eq, eventdir)
-                create_epicenter_csv(eq, eventdir)
+                create_epicenter_gpq(eq, eventdir)
 
                 print(f'ShakeMap files extracted for Event ID: {event_id} to folder: {eventdir}')
                 filepaths.append(eventdir)

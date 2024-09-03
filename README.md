@@ -14,7 +14,7 @@ ShakeMap API returns GeoJSON for each detected earthquake event. The data within
 For each earthquake event detected in the FeedURL that is located within the USA (CONUS, AK, HI, PR), the following files are generated/extracted:
 
 **Generated files:**
-- `epicenter.csv` - csv containing the following information about the earthquake:
+- `epicenter.geoparquet` - csv containing the following information about the earthquake:
   - event_id
   - title
   - magnitude
@@ -28,12 +28,12 @@ For each earthquake event detected in the FeedURL that is located within the USA
 - `event_info.txt` - log file containing information about the event status (whether or not the files have been reviewed, udpated, etc) and timestamps  
 
 **USGS ShakeMap GIS files:**
-- `mi.shp` - macroseismic intensity
-- `pga.shp` - peak ground acceleration
-- `pgv.shp` - peak ground velocity
-- `psa0p3.shp` - 0.3 second peak spectral acceleration
-- `psa1p0.shp` - 1.0 second peak spectral acceleration
-- `psa3p0.shp` - 3.0 second peak spectral acceleration
+- `mi.geoparquet` - macroseismic intensity
+- `pga.geoparquet` - peak ground acceleration
+- `pgv.geoparquet` - peak ground velocity
+- `psa0p3.geoparquet` - 0.3 second peak spectral acceleration
+- `psa1p0.geoparquet` - 1.0 second peak spectral acceleration
+- `psa3p0.geoparquet` - 3.0 second peak spectral acceleration
 
 
 Code has been modified from [this](https://gist.github.com/mhearne-usgs/6b040c0b423b7d03f4b9) original source.
